@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThriveTrack </title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #3F51B5;
+            --secondary: #607D8B;
+            --accent: #4CAF50;
+            --social: #FF9800;
+            --light: #F5F5F5;
+            --dark: #212121;
+            --text: #333;
+            --text-light: #757575;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light);
+            color: var(--text);
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .hero p {
+            color: var(--text-light);
+            margin-top: 0;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        .habit-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"], input[type="number"], input[type="time"], select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+        }
+
+        .btn-social {
+            background-color: var(--social);
+        }
+
+        .habit-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .habit-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .habit-item:last-child {
+            border-bottom: none;
+        }
+
+        .habit-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .delete-btn {
+            background-color: #F44336;
+        }
+
+        .graph-container {
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .streak {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 0.5rem 0;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .notification-settings, .social-comparison {
+            margin-top: 2rem;
+        }
+
+        .friend-list {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .friend-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 150px;
+            text-align: center;
+        }
+
+        .friend-streak {
+            color: var(--social);
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ThriveTrack </h1>
+        <p>Track, Analyze, and Share Your Progress</p>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <h1>Build Better Habits</h1>
+            <p>Log your daily habits, set reminders, and compare with friends.</p>
+        </section>
+
+        <div class="dashboard">
+            <!-- Habit Input Section -->
+            <div class="card">
+                <h3>Add New Habit</h3>
+                <form class="habit-form" id="habitForm">
+                    <input type="text" id="habitName" placeholder="e.g., Study 2 hours" required>
+                    <input type="number" id="habitTarget" placeholder="Target (mins)" min="1">
+                    <button type="submit">Add</button>
+                </form>
+
+                <h3>Your Habits</h3>
+                <ul class="habit-list" id="habitList"></ul>
+            </div>
+
+            <!-- Analytics Section -->
+            <div class="card">
+                <h3>Your Progress</h3>
+                <div class="streak">Current Streak: <span id="streakCount">0</span> days</div>
+                <div class="graph-container">
+                    <canvas id="progressChart"></canvas>
+                </div>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    <button onclick="generatePDFReport('weekly')" class="btn-primary">Weekly Report</button>
+                    <button onclick="generatePDFReport('monthly')" class="btn-primary">Monthly Report</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="card notification-settings">
+            <h3>Reminder Notifications</h3>
+            <div id="notificationForm">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <select id="habitSelect">
+                        <option value="">Select Habit</option>
+                    </select>
+                    <input type="time" id="reminderTime">
+                </div>
+                <button onclick="addReminder()">Set Reminder</button>
+            </div>
+            <div id="remindersList" style="margin-top: 1rem;"></div>
+        </div>
+
+        <!-- Social Comparison -->
+        <div class="card social-comparison">
+            <h3>Compare With Friends</h3>
+            <button onclick="addFriend()" class="btn-social">Add Friend</button>
+            <div class="friend-list" id="friendList">
+                <!-- Friend cards will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 made by Tanmay Tiwari</p>
+    </footer>
+
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+
+        // Habit Data Storage
+        let habits = JSON.parse(localStorage.getItem('habits')) || [];
+        let streak = localStorage.getItem('streak') || 0;
+        let reminders = JSON.parse(localStorage.getItem('reminders')) || [];
+        let friends = JSON.parse(localStorage.getItem('friends')) || [
+            { name: "Alex", streak: 12 },
+            { name: "Sam", streak: 8 },
+            { name: "Jordan", streak: 15 }
+        ];
+
+        // DOM Elements
+        const habitForm = document.getElementById('habitForm');
+        const habitName = document.getElementById('habitName');
+        const habitTarget = document.getElementById('habitTarget');
+        const habitList = document.getElementById('habitList');
+        const streakCount = document.getElementById('streakCount');
+        const habitSelect = document.getElementById('habitSelect');
+        const reminderTime = document.getElementById('reminderTime');
+        const remindersList = document.getElementById('remindersList');
+        const friendList = document.getElementById('friendList');
+
+        // Chart Initialization
+        const progressCtx = document.getElementById('progressChart').getContext('2d');
+        let progressChart = new Chart(progressCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Minutes Tracked',
+                    data: [],
+                    backgroundColor: '#4CAF50'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Load Data on Startup
+        function loadData() {
+            loadHabits();
+            loadReminders();
+            loadFriends();
+            checkReminders();
+        }
+
+        // Load Habits
+        function loadHabits() {
+            habitList.innerHTML = '';
+            habitSelect.innerHTML = '<option value="">Select Habit</option>';
+            
+            habits.forEach((habit, index) => {
+                // Add to habit list
+                const li = document.createElement('li');
+                li.className = 'habit-item';
+                li.innerHTML = `
+                    <span>${habit.name} (${habit.target} mins)</span>
+                    <div class="habit-actions">
+                        <button onclick="completeHabit(${index})">✓</button>
+                        <button class="delete-btn" onclick="deleteHabit(${index})">✕</button>
+                    </div>
+                `;
+                habitList.appendChild(li);
+                
+                // Add to habit select dropdown
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = habit.name;
+                habitSelect.appendChild(option);
+            });
+            
+            updateChart();
+            streakCount.textContent = streak;
+        }
+
+        // Add New Habit
+        habitForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = habitName.value.trim();
+            const target = habitTarget.value || 30;
+
+            if (name) {
+                habits.push({
+                    name,
+                    target,
+                    completed: false,
+                    history: []
+                });
+                localStorage.setItem('habits', JSON.stringify(habits));
+                habitName.value = '';
+                habitTarget.value = '';
+                loadData();
+            }
+        });
+
+        // Complete Habit
+        function completeHabit(index) {
+            habits[index].completed = true;
+            habits[index].history.push(new Date().toLocaleDateString());
+            streak++;
+            localStorage.setItem('habits', JSON.stringify(habits));
+            localStorage.setItem('streak', streak);
+            loadData();
+        }
+
+        // Delete Habit
+        function deleteHabit(index) {
+            habits.splice(index, 1);
+            localStorage.setItem('habits', JSON.stringify(habits));
+            loadData();
+        }
+
+        // Update Chart Data
+        function updateChart() {
+            const labels = habits.map(habit => habit.name);
+            const data = habits.map(habit => habit.history.length * habit.target);
+            
+            progressChart.data.labels = labels;
+            progressChart.data.datasets[0].data = data;
+            progressChart.update();
+        }
+
+        // Reminder Functions
+        function loadReminders() {
+            remindersList.innerHTML = '';
+            reminders.forEach((reminder, index) => {
+                const div = document.createElement('div');
+                div.className = 'habit-item';
+                div.innerHTML = `
+                    <span>${habits[reminder.habitIndex].name} at ${reminder.time}</span>
+                    <button class="delete-btn" onclick="deleteReminder(${index})">✕</button>
+                `;
+                remindersList.appendChild(div);
+            });
+        }
+
+        function addReminder() {
+            const habitIndex = habitSelect.value;
+            const time = reminderTime.value;
+            
+            if (habitIndex && time) {
+                reminders.push({ habitIndex, time });
+                localStorage.setItem('reminders', JSON.stringify(reminders));
+                reminderTime.value = '';
+                loadData();
+            }
+        }
+
+        function deleteReminder(index) {
+            reminders.splice(index, 1);
+            localStorage.setItem('reminders', JSON.stringify(reminders));
+            loadData();
+        }
+
+        function checkReminders() {
+            const now = new Date();
+            const currentTime = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+            
+            reminders.forEach(reminder => {
+                if (reminder.time === currentTime) {
+                    alert(`Reminder: Time to ${habits[reminder.habitIndex].name}!`);
+                }
+            });
+        }
+
+        // Check reminders every minute
+        setInterval(checkReminders, 60000);
+
+        // Social Functions
+        function loadFriends() {
+            friendList.innerHTML = '';
+            friends.forEach(friend => {
+                const card = document.createElement('div');
+                card.className = 'friend-card';
+                card.innerHTML = `
+                    <h4>${friend.name}</h4>
+                    <div class="friend-streak">${friend.streak} days</div>
+                `;
+                friendList.appendChild(card);
+            });
+        }
+
+        function addFriend() {
+            const name = prompt("Enter friend's name:");
+            if (name) {
+                const streak = Math.floor(Math.random() * 20) + 1; // Random streak for demo
+                friends.push({ name, streak });
+                localStorage.setItem('friends', JSON.stringify(friends));
+                loadData();
+            }
+        }
+
+        // PDF Report Generation
+        function generatePDFReport(type) {
+            const doc = new jsPDF();
+            const title = `${type.charAt(0).toUpperCase() + type.slice(1)} Habit Report`;
+            
+            doc.setFontSize(20);
+            doc.text(title, 105, 20, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+            
+            // Add chart image
+            const chartCanvas = document.getElementById('progressChart');
+            html2canvas(chartCanvas).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                doc.addImage(imgData, 'PNG', 30, 40, 150, 80);
+                
+                // Add habit data
+                let y = 130;
+                doc.setFontSize(14);
+                doc.text('Your Habits:', 20, y);
+                y += 10;
+                
+                habits.forEach(habit => {
+                    const completionRate = (habit.history.length / (type === 'weekly' ? 7 : 30)) * 100;
+                    doc.setFontSize(12);
+                    doc.text(`${habit.name}: ${completionRate.toFixed(1)}% completed`, 20, y);
+                    y += 10;
+                });
+                
+                // Add streak
+                doc.setFontSize(14);
+                doc.text(`Current Streak: ${streak} days`, 20, y + 10);
+                
+                doc.save(`${type}_habit_report.pdf`);
+            });
+        }
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>
